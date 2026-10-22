@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pink To-Do 🌸</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 24px 16px;
+  font-family: Arial, sans-serif;
+  background: #fff4f8; color: #684653;
+}
+main {
+  max-width: 480px; margin: 25px auto;
+  padding: 24px; background: white;
+  border-radius: 24px;
+  box-shadow: 0 8px 30px #e8b9cb55;
+}
+h1 { text-align: center; color: #d66f98; }
+.subtitle { text-align: center; color: #a17b89; }
+form { display: flex; gap: 8px; }
+input {
+  min-width: 0; flex: 1; padding: 13px;
+  border: 1px solid #f0c7d7; border-radius: 12px;
+  font-size: 16px;
+}
+button {
+  padding: 12px 14px; border: 0; border-radius: 12px;
+  background: #e88db0; color: white;
+  font-size: 15px; cursor: pointer;
+}
+ul { padding: 0; list-style: none; }
+li {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 12px; padding: 12px;
+  background: #fff3f7; border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+li span { flex: 1; }
+li.done span { text-decoration: line-through; opacity: .55; }
+li button { padding: 8px 10px; }
+#count { text-align: center; color: #a17b89; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🌸 Pink To-Do</h1>
+  <p class="subtitle">Маленькие шаги — большие успехи!</p>
+  <form id="form">
+    <input id="task" placeholder="Моё новое дело..." maxlength="150" required>
+    <button type="submit">Добавить</button>
+  </form>
+  <ul id="list"></ul>
+  <p id="count">Пока нет дел 💗</p>
+</main>
+<script>
+const form = document.getElementById('form');
+const input = document.getElementById('task');
+const list = document.getElementById('list');
+const count = document.getElementById('count');
+let tasks = [];
+try { tasks = JSON.parse(localStorage.getItem('pinkTasks') || '[]'); }
+catch { tasks = []; }
+
+function save() {
+  localStorage.setItem('pinkTasks', JSON.stringify(tasks));
+  render();
+}
+function render() {
+  list.replaceChildren();
+  tasks.forEach((task, index) => {
+    const li = document.createElement('li');
+    if (task.done) li.className = 'done';
+    const check = document.createElement('input');
+    check.type = 'checkbox';
+    check.checked = task.done;
+    check.setAttribute('aria-label', 'Выполнено');
+    check.addEventListener('change', () => {
+      tasks[index].done = check.checked; save();
+    });
+    const span = document.createElement('span');
+    span.textContent = task.text;
+    const del = document.createElement('button');
+    del.type = 'button'; del.textContent = 'Удалить';
+    del.addEventListener('click', () => {
+      tasks.splice(index, 1); save();
+    });
+    li.append(check, span, del);
+    list.append(li);
+  });
+  const remaining = tasks.filter(t => !t.done).length;
+  count.textContent = tasks.length
+    ? `Осталось выполнить: ${remaining} из ${tasks.length} 💗`
+    : 'Пока нет дел 💗';
+}
+form.addEventListener('submit', event => {
+  event.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+  tasks.push({text, done: false});
+  input.value = '';
+  save();
+});
+render();
+</script>
+</body>
+</html>
